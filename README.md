@@ -5,9 +5,20 @@ Realtime chat engine with hooks in multiple languages. UI-less, written in Flask
 
 ####Requirements:
 
+System Requirements:
  - Python 2.7.x
- - Flask (might be replaced with a WebSocket or RTC solution)
- - SQLAlchemy 0.9.x (**not** flask-sqlalchemy)
+ - Python-Devel (`sudo yum install python-devel` or `sudo apt-get install python-dev`)
+
+Python Package Requirements
+ - Flask
+ - Flask-SocketIO
+ - gevent
+ - greenlet
+ - jinja2.
+ 
+Other Requirements
+ - SocketIO (js client)
+ - App to intergrate PyChattr with
 
 
 

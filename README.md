@@ -17,7 +17,7 @@ Python Package Requirements
  - jinja2.
  
 Other Requirements
- - SocketIO (js client)
+ - SocketIO (js client) version 0.9.16
  - App to intergrate PyChattr with
 
 

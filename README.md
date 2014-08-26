@@ -13,6 +13,8 @@ Python Package Requirements
  - Flask
  - Flask-SocketIO
  - gevent
+ - gevent-socketio
+ - gevent-websocket
  - greenlet
  - jinja2.
  

@@ -16,7 +16,10 @@ Python Package Requirements
  - gevent-socketio
  - gevent-websocket
  - greenlet
- - jinja2.
+ - jinja2
+ - Flask-KVsession
+ - simplekv
+ - redis
  
 Other Requirements
  - SocketIO (js client) version 0.9.16

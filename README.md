@@ -23,6 +23,8 @@ Python Package Requirements
  
 Other Requirements
  - SocketIO (js client) version 0.9.16
+ - jQuery 1.x
+ - StringJS
  - App to intergrate PyChattr with
 
 

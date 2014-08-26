@@ -1,5 +1,5 @@
 from flask import Flask, render_template, session, request
-from flask.ext.socketio import SocketIO, join_room, leave_room, emit, send
+from flask.ext.socketio import SocketIO, join_room, leave_room, emit, send, disconnect
 from uuid import uuid4
 import os, redis
 from flask_kvsession import KVSessionExtension
@@ -91,7 +91,8 @@ def handle_auth(message):
 		# User token invalid
 		send("Sorry, but we could not establish your identity. \
 		    Try logging in again")
-		emit('disconnect', "auth") # tell the client to disconnect
+		emit('kick', "Invalid Token") # tell the client to disconnect
+		disconnect()
 	
 
 @socketio.on('pmuser', namespace='/pychattr')

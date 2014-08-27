@@ -1,7 +1,8 @@
 from flask import Flask, render_template, session, request
-from flask.ext.socketio import SocketIO, join_room, leave_room, emit, send
+from flask.ext.socketio import SocketIO, join_room, leave_room, emit, send, disconnect
 from uuid import uuid4
 import os, redis
+import json as jsondecode
 from flask_kvsession import KVSessionExtension
 from simplekv.memory.redisstore import RedisStore
 
@@ -25,6 +26,16 @@ socketio = SocketIO(app)
 tokens = dict() # dict of tokens
 users = dict() # dict of users' online status
 notices = dict() # list of notifications to send
+rtokens = dict()
+invited = dict()
+
+def find_between( s, first, last ):
+    try:
+        start = s.index( first ) + len( first )
+        end = s.index( last, start )
+        return s[start:end]
+    except ValueError:
+        return ""
 
 @app.route('/client')
 def client():
@@ -54,6 +65,7 @@ def gettoken(user, pkey, token = False):
 			# TODO: Automatically fetch `rkey` as token
 			token = str(uuid4()) # generate a random token
 			tokens[token] = str(user)
+			rtokens[str(user)] = token
 			return token
 		else:
 			# If the server wants a specific token to be set
@@ -80,6 +92,13 @@ def handle_auth(message):
 	# Authenticate a user
 	tok = message
 	try:
+		something = session["username"] # is authed already?
+		emit("error", "Already authenticated as "+something)
+		return
+	except:
+		pass
+		
+	try:
 		# Will succeed is user token is valid
 		user = tokens[tok]
 		send("Welcome, {}. You are connected.".format(user))
@@ -91,30 +110,54 @@ def handle_auth(message):
 		# User token invalid
 		send("Sorry, but we could not establish your identity. \
 		    Try logging in again")
-		emit('disconnect', "auth") # tell the client to disconnect
-	
+		emit('skick', "Invalid Token") # tell the client to disconnect
+		disconnect()
+
+@socketio.on('sendmsg', namespace='/pychattr')
+def handle_json(json):
+	print "got msg"
+	json = jsondecode.loads(json)
+	channel = json['room']
+	text = json['text']
+	user = session["username"]
+	tjson = '{"room": "'+channel+'", "text": "'+text+'", "from": "'+user+'"}'
+	send(tjson, room=channel) # send it :)
+	print str(tjson)
 
 @socketio.on('pmuser', namespace='/pychattr')
 def handle_pmuser(message):
 	# person to PM
 	try:
 		user = session["username"]
-		room = str(user)+"+"+str(message)
+		try:
+			status = users[str(message)]
+			if status == "Online":
+				pass
+			else:
+				emit('error', "User specified is not online.")
+				return
+		except:
+			emit('error', "User specified not found.")
+			return
+			
+		room = "PM:"+str(user)+"+"+str(message)
+		invited[room] = [message] # message = user being PMed
+		# ^ Invite them to the room, so that they can join
 		join_room(room)
 		# notify other client, through notify channel
-		send("{'tojoin': '{}', 'joined': '{}'}".format(message, user), room = "notify") # send a push event
+		send('{"tojoin": "'+message+'", "joined": "'+user+'"}', room = "notify") # send a push event
 		
 	except:
-		pass
+		emit('error', "You are not logged in!")
 		
 @socketio.on('quitpm', namespace='/pychattr')
 def handle_quitpm(message):
 	try:
 		user = session["username"]
-		room = str(user)+"+"+str(message)
+		room = "PM:"+str(user)+"+"+str(message)
 		leave_room(room)
 	except:
-		pass
+		emit('error', "Could not leave PM.")
 		
 		
 @socketio.on('disconnect', namespace='/pychattr')
@@ -122,6 +165,38 @@ def handle_disconnect():
 	user = session["username"]
 	users[str(user)] = "Offline"
 	send(user+" has disconnected.", room = "notify")
+	
+@socketio.on('jroom', namespace='/pychattr')
+def handle_jroom(message):
+	tjroom = str(message)
+	user = session["username"]
+	if tjroom.startswith("#") and "+" not in tjroom:
+		# if channel
+		emit('joinroom', tjroom) # emit a message to make them join
+		join_room(tjroom)
+	elif user in invited[tjroom]:
+		# was invited, i.e, PM or otherwise
+		join_room(tjroom)
+
+@socketio.on('qroom', namespace='/pychattr')
+def handle_qroom(message):
+	tqroom = str(message)
+	try:
+		user = session['username']
+	except:
+		emit('error', "You are not authenticated.")
+		return
+	if tqroom != "notify":
+		# don't allow quitting of notify room
+		try:
+			leave_room(tqroom)
+			return
+		except:
+			emit('error', "You are not in that room")
+			return
+	else:
+		emit('error', "You cannot leave the global notification channel.")
+		return
 
 @socketio.on('status', namespace='/pychattr')
 def handle_statuschange(message):
@@ -130,7 +205,7 @@ def handle_statuschange(message):
 		user = session["username"]
 		users[str(user)] = message
 	except:
-		pass
+		emit('error', "User not found?")
 	
 app.secret_key = os.urandom(24)
 

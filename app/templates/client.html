@@ -6,12 +6,52 @@
 <script src='../static/socket.io.min.js'></script>
 <script src='../static/string.min.js'></script>
 <script src='../static/pychattr.js'></script>
-
+<link href="//maxcdn.bootstrapcdn.com/bootswatch/3.2.0/sandstone/bootstrap.min.css" rel="stylesheet">
+<script src='../static/jquery-ui.min.js'></script>
+<!-- jQuery UI CSS -->
+<link href='../static/jquery-ui.min.css' rel="stylesheet">
+<link href='../static/jquery-ui.structure.min.css' rel="stylesheet">
+<link href='../static/jquery-ui.theme.min.css' rel="stylesheet">
+<!-- /jQuery UI CSS -->
+<style>
+  #dialog label, #dialog input { display:block; }
+  #dialog label { margin-top: 0.5em; }
+  #dialog input, #dialog textarea { width: 95%; }
+  #tabs { margin-top: 1em; }
+  #tabs li .ui-icon-close { float: left; margin: 0.4em 0.2em 0 0; cursor: pointer; }
+  #add_tab { cursor: pointer; }
+</style>
 </head>
-<body>
+<body style='margin-left: 8%'>
 <h1>PyChattr Client Demo</h1>
-<a href='#' id='pm'>PM a person</a>
+<div><p>Logged in as: <strong id='sessuser'></strong></p></div>
+<a href='#' id='pm' class='btn btn-info'>PM a user</a>
+<a href='#' id='disconnect' class='btn btn-info'>Disconnect</a>
+<a href='#' id='reconnect' class='btn btn-info'>Reconnect</a>
+<div id="tabs" style='width:70%; margin-bottom:100px'>
+  <ul>
+    <li><a href="#tabs-1">Status</a> </li>
+    <!--<li><a href="#tabs-2">Test</a> </li>-->
+  </ul>
+  <div id="tabs-1">
+    <h3>Status Log</h3>
+	<div class='well' id='log' style='color:black'></div>
+	<div id='tokform'>
+	<input type='text' class='form-control' style='//width:400px' id='token' />
+	<a href='#' id='toksub' class='btn btn-success' style='display:inline'>Authenticate</a>
+  </div>
+  </div>
+  <!--
+  <div id="tabs-2">
+    <h3>PM with CakeJohnny</h3>
+	<div class='well' id='56' style='color:black'>
+		<p><b>CakeJohnny: </b>lol69</p>
+	</div>
+  </div>
+  -->
+</div>
 
-<div id='log'></div>
+
+
 </body>
 </html>

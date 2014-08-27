@@ -81,6 +81,11 @@ Coming soon.
  
 ####Todo:
 
- - Force disconnect if invalid token, or deny access to all actions if session is not present in `redis`
+ - Channels
+ - Ban/kick
+ - Oper/voice
+ - Hostnames & IP fetching through SocketIO
+ - Filter XSS
+ - Server Services
 
 

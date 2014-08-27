@@ -110,6 +110,7 @@ def handle_auth(message):
 		# User token invalid
 		send("Sorry, but we could not establish your identity. \
 		    Try logging in again")
+<<<<<<< HEAD
 		emit('skick', "Invalid Token") # tell the client to disconnect
 		disconnect()
 
@@ -123,6 +124,11 @@ def handle_json(json):
 	tjson = '{"room": "'+channel+'", "text": "'+text+'", "from": "'+user+'"}'
 	send(tjson, room=channel) # send it :)
 	print str(tjson)
+=======
+		emit('kick', "Invalid Token") # tell the client to disconnect
+		disconnect()
+	
+>>>>>>> b2b49989666640d68b69a22107893d735f41576a
 
 @socketio.on('pmuser', namespace='/pychattr')
 def handle_pmuser(message):

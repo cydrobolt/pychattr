@@ -38,16 +38,16 @@ Other Requirements
 
 ####Installation:
 
-######Server
+#####Server
 
-Clone the repo: `git clone https://github.com/Cydrobolt/pychattr.git`
-`cd` to the app: `cd pychattr`
-Create a VirtualEnv (highly recommended): `pip install virtualenv && virtualenv env && source env/bin/activate` 
-Install requirements through `pip`: `pip install -r requirements.txt`
-Edit `__init__.py` to change the app's `MUTUAL_SECRET`. This is the `pkey` required to generate tokens.
-Run the PyChattr server: `cd app && python __init__.py`
+ - Clone the repo: `git clone https://github.com/Cydrobolt/pychattr.git`
+ - `cd` to the app: `cd pychattr`
+ - Create a VirtualEnv (highly recommended): `pip install virtualenv && virtualenv env && source env/bin/activate` 
+ - Install requirements through `pip`: `pip install -r requirements.txt`
+ - Edit `__init__.py` to change the app's `MUTUAL_SECRET`. This is the `pkey` required to generate tokens.
+ - Run the PyChattr server: `cd app && python __init__.py`
 
-######Client
+#####Client
 
 The client, by default, is served by the PyChattr server at `/client`.
 However, PyChattr was designed for cross-platform, cross-server, cross-language
@@ -64,7 +64,7 @@ If you find any bugs, please file an issue on GitHub.
 
 ####Documentation:
 
-######Authentication Structure:
+#####Authentication Structure:
 
 Web Server = S1
 
@@ -75,7 +75,7 @@ Person Logs in to S1 -> S1 requests `/gettoken/<user>/nil/<pkey` (refer to `Serv
  -> S1 stores the returned token in a session variable -> After connecting to PyChattr
  through SocketIO, emit the `auth` event and pass the token as the message -> User is authenticated or denied. 
 
-######Events:
+#####Events:
 
 Coming soon.
  

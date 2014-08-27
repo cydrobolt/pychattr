@@ -21,11 +21,15 @@ function temit(event, message) {
 function tsend(message) {
 	socket.send({"data": message, "token": token});	
 }
+<<<<<<< HEAD
 
 
 $(document).ready(function() {
 	$( "#tabs" ).tabs();
 	$('#reconnect').hide();
+=======
+$(document).ready(function(){
+>>>>>>> b2b49989666640d68b69a22107893d735f41576a
     var socket = io.connect('http://' + domain + ':' + port + '/pychattr', {reconnect: false});
     socket.on('auth', function(msg) {
         applog('<p>Received: ' + msg + '</p>');
@@ -149,6 +153,11 @@ $(document).ready(function() {
         if (msg=="You are not logged in!") {
 			$('#tokform').show();
 		}
+    });
+    socket.on('kick', function(msg) {
+        $('#log').append('<p>Disconnected by server: '+msg+'</p>');
+        socket.disconnect();
+        console.log('kicked');
     });
     $('#pm').click(function () {
 		var topm = window.prompt('Who would you like to PM');

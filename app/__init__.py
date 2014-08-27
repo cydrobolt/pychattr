@@ -118,6 +118,12 @@ def handle_json(json):
 	json = jsondecode.loads(json)
 	channel = json['room']
 	text = json['text']
+	
+	if text[0] == "/":
+		handle_command(text)
+		return # it's a command!
+	
+	
 	text = text.translate(None, '}{<>') #antiXSS
 	text = text.replace("'", "\'")
 	text = text.replace('"', '\"')
@@ -212,12 +218,18 @@ def handle_command(message):
 		command = command[arglen:]
 
 	if actual_command == "join":
-		pass
+		if argscount == 2:
+			key = args[1]
+			channel = args[0]
+		else:
+			channel = args[0]
+		handle_jroom(channel)
 	elif actual_command == "ban":
 		pass
 	elif actual_command == "kick":
 		pass
-	elif actual_command == "part" or actual_command == "leave"
+	elif actual_command == "part" or actual_command == "leave":
+		handle_qroom(args[0])
 @socketio.on('status', namespace='/pychattr')
 def handle_statuschange(message):
 	try:

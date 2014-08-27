@@ -198,8 +198,7 @@ $(document).ready(function() {
       var panelId = $( this ).closest( "li" ).remove().attr( "aria-controls" );
       $( "#" + panelId ).remove();
       var qpm = S(panelId).between('tabs-', '').s
-      
-      qroom(rli[qpm]);
+      socket.emit('qroom', rli[qpm])
       var index = pms.indexOf(rli[qpm]);
       delete pms[index];
       delete rli[qpm];

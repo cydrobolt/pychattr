@@ -115,14 +115,15 @@ def handle_auth(message):
 
 @socketio.on('sendmsg', namespace='/pychattr')
 def handle_json(json):
-	print "got msg"
 	json = jsondecode.loads(json)
 	channel = json['room']
 	text = json['text']
+	text = text.translate(None, '}{<>') #antiXSS
+	text = text.replace("'", "\'")
+	text = text.replace('"', '\"')
 	user = session["username"]
 	tjson = '{"room": "'+channel+'", "text": "'+text+'", "from": "'+user+'"}'
 	send(tjson, room=channel) # send it :)
-	print str(tjson)
 
 @socketio.on('pmuser', namespace='/pychattr')
 def handle_pmuser(message):
@@ -150,14 +151,7 @@ def handle_pmuser(message):
 	except:
 		emit('error', "You are not logged in!")
 		
-@socketio.on('quitpm', namespace='/pychattr')
-def handle_quitpm(message):
-	try:
-		user = session["username"]
-		room = "PM:"+str(user)+"+"+str(message)
-		leave_room(room)
-	except:
-		emit('error', "Could not leave PM.")
+
 		
 		
 @socketio.on('disconnect', namespace='/pychattr')
@@ -198,6 +192,32 @@ def handle_qroom(message):
 		emit('error', "You cannot leave the global notification channel.")
 		return
 
+@socketio.on('command', namespace='/pychattr')
+def handle_command(message):
+	command = message
+	if "/" not in command:
+		emit('error', "Invalid command syntax. Please include slash")
+		return
+	actual_command = find_between(command, "/", " ")
+	command = command.translate(None, '/{}"\'')
+	argscount = command.count(' ')
+	args = []
+	cmdlen = int(len(actual_command)+1)
+	command = " "+command[cmdlen:]+" "
+	for i in xrange(0,argscount):
+		
+		arg = find_between(command, " ", " ")
+		args.append(arg)
+		arglen = len(arg)+1
+		command = command[arglen:]
+
+	if actual_command == "join":
+		pass
+	elif actual_command == "ban":
+		pass
+	elif actual_command == "kick":
+		pass
+	elif actual_command == "part" or actual_command == "leave"
 @socketio.on('status', namespace='/pychattr')
 def handle_statuschange(message):
 	try:

@@ -108,6 +108,7 @@ $(document).ready(function() {
 				console.log('Incoming!');
 				var recvroom_fa = json.room.replace(":", "_");
 				var recvroom = recvroom_fa.replace("+", "_");
+				recvroom = recvroom.replace(".", "\\.");
 				$('#'+recvroom).append('<p><b>'+json.from+'</b>: '+json.text+"</p>"); // add to corresponding well
 			}
 			else {

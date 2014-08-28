@@ -20,7 +20,7 @@ app = Flask(__name__)
 KVSessionExtension(store, app)
 
 app.config['SECRET_KEY'] = 'secret!'
-app.config['MUTUAL_SECRET'] = 'tcynAU*CT47KFe&s&8&' # keep this a secret
+app.config['MUTUAL_SECRET'] = 'PleaseChangeThisPassword' # keep this a secret
 socketio = SocketIO(app)
 
 tokens = dict() # dict of tokens

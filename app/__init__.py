@@ -15,12 +15,20 @@ store = RedisStore(redis.StrictRedis())
 # Licensed under GPLv2, or later. Read LICENSE for more info.
 '''
 
+# --------- Config --------- #
+
+use_tokens = False
+
+# --------- /Config --------- #
+
+
+
 app = Flask(__name__)
 
 KVSessionExtension(store, app)
 
 app.config['SECRET_KEY'] = 'secret!'
-app.config['MUTUAL_SECRET'] = 'tcynAU*CT47KFe&s&8&' # keep this a secret
+app.config['MUTUAL_SECRET'] = '2b248pTqa6CBlfJ8uxZJgG02pgPxwiFFzCPgFwFKEyPHeoyD0I' # keep this a secret
 socketio = SocketIO(app)
 
 tokens = dict() # dict of tokens
@@ -28,6 +36,7 @@ users = dict() # dict of users' online status
 notices = dict() # list of notifications to send
 rtokens = dict()
 invited = dict()
+chanulist = dict()
 
 def find_between( s, first, last ):
     try:
@@ -84,7 +93,10 @@ def getuser(token):
 def handle_connect():
 	print "Client Connected"
 	join_room("notify") # join notify room
-	emit('auth', "Please authenticate with your token.")
+	if use_tokens == True:
+		emit('auth', "Please authenticate with your token.")
+	else:
+		emit('auth', "Please choose a nickname. ")
 	send("User has joined socket", room = "notify")
 
 @socketio.on('auth', namespace='/pychattr')
@@ -97,27 +109,56 @@ def handle_auth(message):
 		return
 	except:
 		pass
+	if use_tokens == True:
+		try:
+			# Will succeed is user token is valid
+			user = tokens[tok]
+			send("Welcome, {}. You are connected.".format(user))
+			users[str(user)] = "Online"
+			session["username"] = user # store it in a session
+			send(session['username']+" has come online.", room = "notify")
+			return
+		except:
+			# User token invalid
+			send("Sorry, but we could not establish your identity. \
+				Try logging in again")
+			emit('skick', "Invalid Token") # tell the client to disconnect
+			disconnect()
+	else:
+		tok = str(tok).translate(None, "!@#$%&*()/\<>~+;'") # filter symbols
+		# no token nonsense
+		try:
+			if users[str(tok)] != "Offline":
+				# If online, deny
+				emit('skick', "Username in use.")
+				disconnect();
+				return
+			else:
+				# Offline, allow use
+				token = str(uuid4()) # generate a random token
+				tokens[token] = str(tok)
+				rtokens[str(tok)] = token
+				users[str(tok)] = "Online"
+				session["username"] = tok
+				send("You are now known as "+tok)
+				return
+				
+		except:
+			token = str(uuid4()) # generate a random token
+			tokens[token] = str(tok)
+			rtokens[str(tok)] = token
+			users[str(tok)] = "Online"
+			session["username"] = tok
+			send("You are now known as "+tok)
+			return
+				
 		
-	try:
-		# Will succeed is user token is valid
-		user = tokens[tok]
-		send("Welcome, {}. You are connected.".format(user))
-		users[str(user)] = "Online"
-		session["username"] = user # store it in a session
-		send(session['username']+" has come online.", room = "notify")
-		return
-	except:
-		# User token invalid
-		send("Sorry, but we could not establish your identity. \
-		    Try logging in again")
-		emit('skick', "Invalid Token") # tell the client to disconnect
-		disconnect()
 
 @socketio.on('sendmsg', namespace='/pychattr')
 def handle_json(json):
 	json = jsondecode.loads(json)
 	channel = json['room']
-	text = json['text']
+	text = str(json['text'])
 	
 	if text[0] == "/":
 		handle_command(text)
@@ -169,10 +210,16 @@ def handle_disconnect():
 @socketio.on('jroom', namespace='/pychattr')
 def handle_jroom(message):
 	tjroom = str(message)
+	channel = tjroom
 	user = session["username"]
 	if tjroom.startswith("#") and "+" not in tjroom:
 		# if channel
 		emit('joinroom', tjroom) # emit a message to make them join
+		# tell the room
+		text = user+" has joined "+tjroom
+		tjson = '{"room": "'+tjroom+'", "text": "'+text+'", "from": "'+"<strong style='color:red'>System</strong>"+'"}'
+		send(tjson, room=channel) # send it :)
+		
 		join_room(tjroom)
 	elif user in invited[tjroom]:
 		# was invited, i.e, PM or otherwise
@@ -200,7 +247,7 @@ def handle_qroom(message):
 
 @socketio.on('command', namespace='/pychattr')
 def handle_command(message):
-	command = message
+	command = str(message)
 	if "/" not in command:
 		emit('error', "Invalid command syntax. Please include slash")
 		return
@@ -230,6 +277,8 @@ def handle_command(message):
 		pass
 	elif actual_command == "part" or actual_command == "leave":
 		handle_qroom(args[0])
+	else:
+		emit('error', "Invalid command given")
 @socketio.on('status', namespace='/pychattr')
 def handle_statuschange(message):
 	try:
@@ -244,6 +293,6 @@ app.secret_key = os.urandom(24)
 if __name__ == '__main__':
 #	try:
 #	socketio.run(app)
-	socketio.run(app, port= 5000)
+	socketio.run(app, port= 5858)
 #	except e:
 #		print e

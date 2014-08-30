@@ -7,7 +7,7 @@
 */
 
 var domain = 'localhost';
-var port = 5000;
+var port = 5858;
 var skip, pmdiv, token, pms, rli, sessuser;
 pms = {}, rli = {};
 
@@ -26,6 +26,7 @@ function tsend(message) {
 $(document).ready(function() {
 	$( "#tabs" ).tabs();
 	$('#reconnect').hide();
+	$("#form-status").hide();
     var socket = io.connect('http://' + domain + ':' + port + '/pychattr', {reconnect: false});
     socket.on('auth', function(msg) {
         applog('<p>Received: ' + msg + '</p>');
@@ -34,12 +35,13 @@ $(document).ready(function() {
 			if (predtok.length > 5) {
 				// if predefined token, e.g DogeBoosting
 				socket.emit('auth', predtok);
+				$("#form-status").show();
 				$('#toksub').hide();
 			}
 		}
 		catch(err) {
 			console.log(err);
-			applog("<p style='color:green'>Enter your token details below to continue. </p>");
+			applog("<p style='color:green'>Enter your token details below to continue, or choose a nickname is the server allows it. </p>");
 		
 		}
         
@@ -49,6 +51,7 @@ $(document).ready(function() {
 		token = $('#token').val();
 		socket.emit('auth', token);
 		$('#tokform').hide();
+		$("#form-status").show();
 	});
     socket.on('message', function(msg) {
 		var iswelcome = S(msg).between('Welcome, ', '. You are connected.').s
@@ -109,6 +112,7 @@ $(document).ready(function() {
 				var recvroom_fa = json.room.replace(":", "_");
 				var recvroom = recvroom_fa.replace("+", "_");
 				recvroom = recvroom.replace(".", "\\.");
+				recvroom = recvroom.replace("#", "\\#");
 				$('#'+recvroom).append('<p><b>'+json.from+'</b>: '+json.text+"</p>"); // add to corresponding well
 			}
 			else {
@@ -135,7 +139,15 @@ $(document).ready(function() {
 	  $('#input-'+tid).val("");
 	  return false;
 	});
-    
+    $("#form-status").on('submit', function() {
+		var tid = "status";
+		var text = $('#input-'+tid).val();
+		socket.emit('command', text);
+		console.log('emitted cmd');
+		$('#input-'+tid).val("");
+		return false;
+	});
+		
     socket.on('skick', function(msg) {
         applog('<p>Kicked from server: '+msg+'</p>');
         socket.disconnect();
@@ -151,6 +163,21 @@ $(document).ready(function() {
 			$('#tokform').show();
 		}
     });
+    socket.on('joinroom', function(msg) {
+
+		var d = new Date();
+		console.log('Joined Channel');
+		applog('<p>You joined '+msg+'.</p>');
+		chandiv = "<h3>"+msg+"</h3>\
+				<div class='well' id='"+msg+"' style='color:black'>\
+				</div>\
+				<br /><form id='form-#{tid}k'><input type='text' style='width:70%;display:inline' class='form-control' id='input-#{tid}'/><input type='submit' style='width:20%;display:inline' id='submit-#{tid}' class='form-control'/></form>";
+		addTab(msg, chandiv, msg);
+		
+		
+	});
+		
+		
     $('#pm').click(function () {
 		var topm = window.prompt('Who would you like to PM');
 		socket.emit('pmuser', topm);

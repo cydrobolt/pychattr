@@ -66,6 +66,10 @@ If you find any bugs, please file an issue on GitHub.
 
 #####Authentication Structure:
 
+** Server-side Token Authentication **
+
+Used for cross-server chat needs. For example, a PHP server based authentication system intergrating with PyChattr, a Python-Flask JSON chat server.
+
 Web Server = S1
 
 PyChattr Server = S2
@@ -75,17 +79,58 @@ Person Logs in to S1 -> S1 requests `/gettoken/<user>/nil/<pkey` (refer to `Serv
  -> S1 stores the returned token in a session variable -> After connecting to PyChattr
  through SocketIO, emit the `auth` event and pass the token as the message -> User is authenticated or denied. 
 
+** Nick Authentication **
+
+Less safety, as users can not be verified against existing authentication databases, however, it is useful if you wish to run a casual chat server for friends or visitors. 
+
+`Potato`*: An IRC NickServ-like service that allows registration of nicks, preventing unauthorized use. Password authencation is used.
+
+`Celery`*: An IRC ChanServ-like service that allows registration of channels, preventing unauthorized access to channels. Depends on Potato accounts.
+
+* Both Potato and Celery require databases. PyChattr, by itself, is completely standalone, and usually depends on existing systems for authentication. However, if you decide to run PyChattr without any external server dependencies, you will have to install SQLAlchemy in order to allow `Potato` and `Celery` to persist data.
+* 
+#####Commands:
+
+**Stable Commands**
+ - `/join #channel` - Joins `#channel`.
+ - `/part #channel` - Leaves `#channel`.
+ - `/msg user` - Messages `user`.
+
+**Experimental Commands**
+
+`/kick user` - Kicks a user.
+`/ban user` - Bans a user. (currently only for token auth, or Potato)
+`/nick newnick` - Changes nickname to newnick.
+
+**Services**
+
+######Potato (Nickname Service)
+
+ - `/potato register <nick> <password> <email>` - Registers a nickname
+ - `/potato disconnect <nick> <password>` - Disconnect a user that is using your nickname
+ - `/potato identify <nick> <password>` - Identify to a nickname through Potato
+
+#######Celery (Channel Service)
+
+ - `/celery register #channel` - Registers a channel
+ - `/celery op #channel user` - Op user on #channel.
+ - `/celery deop #channel user` - Deop user on #channel.
+
 #####Events:
 
 Coming soon.
  
 ####Todo:
 
- - Channels
+ - Channels - Currently underway
+ - Nick change
+ - Potato/Celery
  - Ban/kick
  - Oper/voice
  - Hostnames & IP fetching through SocketIO
  - Filter XSS
  - Server Services
 
+####Known Bugs:
 
+Please consult the "Issues" tab.

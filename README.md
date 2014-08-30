@@ -8,6 +8,7 @@ Realtime chat engine with hooks in multiple languages. UI-less, written in Flask
 System Requirements:
  - Python 2.7.x
  - Python-Devel (`sudo yum install python-devel` or `sudo apt-get install python-dev`)
+ - GCC (GNU C Compiler, `sudo yum install gcc` or `sudo apt-get install gcc`
 
 Python Package Requirements
 

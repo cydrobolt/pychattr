@@ -110,7 +110,7 @@ Less safety, as users can not be verified against existing authentication databa
  - `/potato disconnect <nick> <password>` - Disconnect a user that is using your nickname
  - `/potato identify <nick> <password>` - Identify to a nickname through Potato
 
-#######Celery (Channel Service)
+######Celery (Channel Service)
 
  - `/celery register #channel` - Registers a channel
  - `/celery op #channel user` - Op user on #channel.

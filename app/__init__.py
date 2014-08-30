@@ -277,6 +277,8 @@ def handle_command(message):
 		pass
 	elif actual_command == "part" or actual_command == "leave":
 		handle_qroom(args[0])
+	elif actual_command == "msg" or actual_command == "pm":
+		handle_pmuser(args[0])	
 	else:
 		emit('error', "Invalid command given")
 @socketio.on('status', namespace='/pychattr')

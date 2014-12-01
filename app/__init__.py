@@ -10,7 +10,6 @@ store = RedisStore(redis.StrictRedis())
 '''
 # PyChattr Server
 # [c] Copyright 2014 Chaoyi Zha
-# </>ed w/ <3 in Philly in '14
 # Authors: Chaoyi Zha <summermontreal@gmail.com>
 # Licensed under GPLv2, or later. Read LICENSE for more info.
 '''

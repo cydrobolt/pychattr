@@ -67,7 +67,7 @@ If you find any bugs, please file an issue on GitHub.
 
 #####Authentication Structure:
 
-** Server-side Token Authentication **
+**Server-side Token Authentication**
 
 Used for cross-server chat needs. For example, a PHP server based authentication system intergrating with PyChattr, a Python-Flask JSON chat server.
 
@@ -80,7 +80,7 @@ Person Logs in to S1 -> S1 requests `/gettoken/<user>/nil/<pkey` (refer to `Serv
  -> S1 stores the returned token in a session variable -> After connecting to PyChattr
  through SocketIO, emit the `auth` event and pass the token as the message -> User is authenticated or denied. 
 
-** Nick Authentication **
+**Nick Authentication**
 
 Less safety, as users can not be verified against existing authentication databases, however, it is useful if you wish to run a casual chat server for friends or visitors. 
 
@@ -88,9 +88,10 @@ Less safety, as users can not be verified against existing authentication databa
 
 `Celery`*: An IRC ChanServ-like service that allows registration of channels, preventing unauthorized access to channels. Depends on Potato accounts.
 
-* Both Potato and Celery require databases. PyChattr, by itself, is completely standalone, and usually depends on existing systems for authentication. However, if you decide to run PyChattr without any external server dependencies, you will have to install SQLAlchemy in order to allow `Potato` and `Celery` to persist data.
-* 
-#####Commands:
+* Both Potato and Celery require databases. PyChattr, by itself, is completely standalone, and usually depends on existing systems for authentication. However, if you decide to run PyChattr without any external server dependencies, you will have to install MongoDB in order to allow `Potato` and `Celery` to persist data.
+
+
+##### Commands:
 
 **Stable Commands**
  - `/join #channel` - Joins `#channel`.

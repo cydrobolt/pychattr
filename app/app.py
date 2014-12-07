@@ -5,6 +5,7 @@ import os, redis
 import json as jsondecode
 from flask_kvsession import KVSessionExtension
 from simplekv.memory.redisstore import RedisStore
+import config
 
 store = RedisStore(redis.StrictRedis())
 '''
@@ -16,7 +17,11 @@ store = RedisStore(redis.StrictRedis())
 
 # --------- Config --------- #
 
-use_tokens = False
+use_tokens = config.use_tokens
+host = config.web['host']
+port = config.web['port']
+secret_key_cookie = config.cookie_key
+mutual_secret_token = config.token_key
 
 # --------- /Config --------- #
 
@@ -26,8 +31,8 @@ app = Flask(__name__)
 
 KVSessionExtension(store, app)
 
-app.config['SECRET_KEY'] = 'secret!'
-app.config['MUTUAL_SECRET'] = '2b248pTqa6CBlfJ8uxZJgG02pgPxwiFFzCPgFwFKEyPHeoyD0I' # keep this a secret
+app.config['SECRET_KEY'] = secret_key_cookie
+app.config['MUTUAL_SECRET'] = mutual_secret_token
 socketio = SocketIO(app)
 
 tokens = dict() # dict of tokens
@@ -62,7 +67,7 @@ def gettoken(user, pkey, token = False):
 		missing_vars = True
 		return "Error: Missing argument"
 	a = ""
-	
+
 	if pkey != app.config['MUTUAL_SECRET']:
 		# Impostor?
 		return "Error: Access Denied" # Deny access
@@ -141,7 +146,7 @@ def handle_auth(message):
 				session["username"] = tok
 				send("You are now known as "+tok)
 				return
-				
+
 		except:
 			token = str(uuid4()) # generate a random token
 			tokens[token] = str(tok)
@@ -150,20 +155,20 @@ def handle_auth(message):
 			session["username"] = tok
 			send("You are now known as "+tok)
 			return
-				
-		
+
+
 
 @socketio.on('sendmsg', namespace='/pychattr')
 def handle_json(json):
 	json = jsondecode.loads(json)
 	channel = json['room']
 	text = str(json['text'])
-	
+
 	if text[0] == "/":
 		handle_command(text)
 		return # it's a command!
-	
-	
+
+
 	text = text.translate(None, '}{<>') #antiXSS
 	text = text.replace("'", "\'")
 	text = text.replace('"', '\"')
@@ -186,26 +191,26 @@ def handle_pmuser(message):
 		except:
 			emit('error', "User specified not found.")
 			return
-			
+
 		room = "PM:"+str(user)+"+"+str(message)
 		invited[room] = [message] # message = user being PMed
 		# ^ Invite them to the room, so that they can join
 		join_room(room)
 		# notify other client, through notify channel
 		send('{"tojoin": "'+message+'", "joined": "'+user+'"}', room = "notify") # send a push event
-		
+
 	except:
 		emit('error', "You are not logged in!")
-		
 
-		
-		
+
+
+
 @socketio.on('disconnect', namespace='/pychattr')
 def handle_disconnect():
 	user = session["username"]
 	users[str(user)] = "Offline"
 	send(user+" has disconnected.", room = "notify")
-	
+
 @socketio.on('jroom', namespace='/pychattr')
 def handle_jroom(message):
 	tjroom = str(message)
@@ -218,7 +223,7 @@ def handle_jroom(message):
 		text = user+" has joined "+tjroom
 		tjson = '{"room": "'+tjroom+'", "text": "'+text+'", "from": "'+"<strong style='color:red'>System</strong>"+'"}'
 		send(tjson, room=channel) # send it :)
-		
+
 		join_room(tjroom)
 	elif user in invited[tjroom]:
 		# was invited, i.e, PM or otherwise
@@ -257,7 +262,7 @@ def handle_command(message):
 	cmdlen = int(len(actual_command)+1)
 	command = " "+command[cmdlen:]+" "
 	for i in xrange(0,argscount):
-		
+
 		arg = find_between(command, " ", " ")
 		args.append(arg)
 		arglen = len(arg)+1
@@ -277,7 +282,7 @@ def handle_command(message):
 	elif actual_command == "part" or actual_command == "leave":
 		handle_qroom(args[0])
 	elif actual_command == "msg" or actual_command == "pm":
-		handle_pmuser(args[0])	
+		handle_pmuser(args[0])
 	else:
 		emit('error', "Invalid command given")
 @socketio.on('status', namespace='/pychattr')
@@ -288,12 +293,9 @@ def handle_statuschange(message):
 		users[str(user)] = message
 	except:
 		emit('error', "User not found?")
-	
+
 app.secret_key = os.urandom(24)
 
 if __name__ == '__main__':
-#	try:
-#	socketio.run(app)
-	socketio.run(app, port= 5858)
-#	except e:
-#		print e
+    print "PyChattr server listening at "+host+":"+str(port)
+    socketio.run(app, port = port, host = host)

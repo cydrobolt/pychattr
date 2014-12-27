@@ -1,7 +1,6 @@
 /*
 * PyChattr JavaScript Client Library 
 * [c] Copyright 2014 Chaoyi Zha and DogeBoosting
-* </>ed w/ <3 in Philly in '14
 * Authors: Chaoyi Zha <summermontreal@gmail.com>
 * Dependencies: socket.io, jQuery 1.x, jQuery UI, stringjs
 */
@@ -112,7 +111,7 @@ $(document).ready(function() {
 				var recvroom_fa = json.room.replace(":", "_");
 				var recvroom = recvroom_fa.replace("+", "_");
 				recvroom = recvroom.replace(".", "\\.");
-				recvroom = recvroom.replace("#", "\\#");
+				recvroom = recvroom.replace(/#/g, "\\#");
 				$('#'+recvroom).append('<p><b>'+json.from+'</b>: '+json.text+"</p>"); // add to corresponding well
 			}
 			else {
